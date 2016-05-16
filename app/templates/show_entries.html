@@ -1,0 +1,153 @@
+{% extends "layout.html" %}
+{% block body %}
+
+{% if session.logged_in %}
+App goal: to teach you answering questions with chances of accurate answer between 90% and 95% for as long as possible..<br>
+Categories: {{ categories_count }} <br>
+Questions: {{ questions_count }} <br>
+Answers: {{ answers_count }} <br>
+Answers Correct: {{ answers_true_count }} <br>
+Answers False: {{ answers_false_count }} <br>
+
+<form action="{{ url_for('add_category') }}" method="post" class="add-category">
+      <dl>
+        <h2>Add category</h2>
+        <dt>Category
+        <dd><textarea rows="3" cols="60" name="category"></textarea>
+        <dd><input type="submit" value="Add">
+      </dl>
+</form>
+
+<form action="{{ url_for('add_entry') }}" method="post" class="add-entry">
+      <dl>
+        <h2>Add question</h2>
+        <dt>Question
+        <dd><textarea name="question" rows="5" cols="60"></textarea>
+        <dt>Answer A (correct)
+        <dd><textarea name="answer_A" rows="5" cols="60"></textarea>
+        <dt>Answer B
+        <dd><textarea name="answer_B" rows="5" cols="60"></textarea>
+        <dt>Answer C
+        <dd><textarea name="answer_C" rows="5" cols="60"></textarea>
+        <dt>Answer D
+        <dd><textarea name="answer_D" rows="5" cols="60"></textarea>
+        <dt>Category
+        <dd><select name="category_id">
+            {% for category in categories %}
+            <option value={{ category.id }}>{{ category.name }}</option>
+            {% endfor %}
+        </select>
+        <dd><input type="submit" value="Share"><br>
+      </dl>
+</form>
+  
+{% endif %}
+
+<h2> Categories </h2> 
+{% for category in categories %}
+    <p>{{ category.name }}<br>
+    <form action="{{ url_for('del_category') }}" method="post" class="del_category">
+      <dl>
+        <input type="hidden" name="category_id" value={{ category.id }}>
+        <dd><input type="submit" value="Delete Category">
+      </dl>
+  </form><br><hr>
+{% endfor %}
+    <form action="{{ url_for('del_all_categories') }}" method="post" class="del_all_cateries">
+      <dl>
+        <dd><input type="submit" value="Delete all categories">
+      </dl>
+    </form>
+    <br><hr>
+
+<h2> Memory lvls </h2> 
+{% for memory_lvl in memory_lvls %}
+<p>lvl: {{ memory_lvl.num }}, answers: {{ memory_lvl.answers_num() }}, ({{ memory_lvl.answers_correct_num() }} /{{ memory_lvl.answers_false_num() }} = ratio +/-: {{ memory_lvl.ratio() }} ), sec: {{ memory_lvl.time_sec }}<br>
+<p>questions: {{ memory_lvl.questions() }}<br>
+<form action="{{ url_for('update_memory_lvl') }}" method="post" class="update_memory_lvl">
+        <input type="hidden" name="memory_lvl_id" value={{ memory_lvl.id }}>
+        <input type="submit" value="Update Memory lvl">
+    <br><hr>
+</form><br>
+{% endfor %}
+
+<form action="{{ url_for('update_memory_lvls') }}" method="post" class="update_memory_lvls">
+      <dl>
+        <dd><input type="submit" value="Update all Memory lvls">
+    </dl><br><hr>
+</form>
+
+<h2> Questions </h2>
+{% for the_question in questions %}
+    <br><p>
+    <form action="{{ url_for('check') }}" method="post" class="check">
+        <p>{{ the_question.category.name|safe }}<br>
+        <p><h3>{{ the_question.question_text }}</h3>
+        <p>Answered (correct / false) <b> {{ the_question.answered }} ( {{ the_question.answered_correct }} / {{ the_question.answered_false }}) </b><br>
+        <p><b>Level of memorization {{ the_question.memorized_lvl() }} ( {{ the_question.memorized_period() }} sec) </b><br>
+        <p><b>In memory now* {{ the_question.in_memory() }} </b><br>
+        <p><b>Time of forgeting* {{ the_question.time_of_forgeting() }} </b><br>
+        <p><b>Potential in memory {{ the_question.potential_in_memory() }} </b><br>
+        <p><b>Potential in memory but not in memory {{ the_question.potential_in_memory_but_not_in_memory() }} </b><br>
+        <p><b>Time left in memory* {{ the_question.time_left_in_memory() }} </b><br>
+        <p>Latest false answer time {{ Answer_ob.query.join(Option_ob).filter(Option_ob.correctness==False, Option_ob.question==the_question).order_by(Answer_ob.take_datetime.desc()).first().take_datetime|safe }} <br>
+        <p>Latest correct answer time {{ Answer_ob.query.join(Option_ob).filter(Option_ob.correctness==True, Option_ob.question==the_question).order_by(Answer_ob.take_datetime.desc()).first().take_datetime|safe }} <br>
+        <p>
+        ID: {{ the_question.id }}<br>
+        {% for option in the_question.options|shuffle %}
+        <input type="radio" name="option_id" value={{ option.id }}>{{ option.option_text|safe }}, id: {{ option.id }}, answers: {{ option.answers.count() }}, correctness: {{ option.correctness }} <br>
+        {% endfor %}
+        <p><input type="submit" value="Check"><br>
+    </form>
+    <form action="{{ url_for('del_entry') }}" method="post" class="del_entry">
+      <dl>
+        <input type="hidden" name="question_id" value={{ the_question.id }}>
+        <dd><input type="submit" value="Delete Question">
+      </dl>
+    </form>
+    <br><hr>
+{% else %}
+    <li><em>Unbelievable.  No entries here so far</em>
+{% endfor %}
+    <form action="{{ url_for('del_all_questions') }}" method="post" class="del_all_questions">
+      <dl>
+        <dd><input type="submit" value="Delete all questions">
+      </dl>
+    </form>
+    <br><hr>
+    <form action="{{ url_for('del_all_options') }}" method="post" class="del_all_options">
+      <dl>
+          <dd><input type="submit" value="Delete all options">
+          Only if there is no Questions, otherwise troubles!
+      </dl>
+    </form>
+    <br><hr>
+
+<h2> Answers </h2>
+{% for answer in answers %}
+    <br><p>
+    <p>Answer id {{ answer.id|safe }}<br>
+    <p>Answer option id {{ answer.option.id|safe }}<br>
+        Answer option given correctness {{ answer.option.correctness|safe }}<br>
+        Question id {{ answer.question.id|safe }}<br>
+        Date {{ answer.take_datetime|safe }}<br>
+        Memory level {{ answer.memory_lvl.num|safe }}<br>
+    <form action="{{ url_for('del_answer') }}" method="post" class="del_answer">
+      <dl>
+        <input type="hidden" name="answer_id" value={{ answer.id }}>
+        <dd><input type="submit" value="Delete Answer">
+      </dl>
+  </form><br><hr>
+{% else %}
+    <li><em>Unbelievable.  No answer here so far</em>
+{% endfor %}
+    <form action="{{ url_for('del_all_answers') }}" method="post" class="del_all_answers">
+      <dl>
+        <dd><input type="submit" value="Delete all answers">
+      </dl>
+    </form>
+    <br><hr>
+
+
+
+{% endblock %}

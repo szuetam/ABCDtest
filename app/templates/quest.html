@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+{% block body %}
+
+{% if session.logged_in %}
+
+{% endif %}
+
+<h2> Quest </h2>
+
+{% if the_question %}
+    <br><p>
+        <p><h6>Memorized lvl: {{ the_question.memorized_lvl()|safe }}</h6><br>
+    <form action="{{ url_for('quest_check') }}" method="post" class="quest_check">
+        <p><h6>{{ the_question.category.name|safe }}</h6><br>
+        <p><h3>{{ the_question.question_text }}</h3>
+        <p>
+        {% for option in the_question.options|shuffle %}
+        <p><input type="radio" name="option_id" value={{ option.id }}>{{ option.option_text|safe }} <br>
+        {% endfor %}
+        <p><input type="submit" value="Check"><br><hr>
+    </form>
+{% else %}
+    <li><em>Unbelievable.No quest to give!</em>
+{% endif %}
+
+{% endblock %}
