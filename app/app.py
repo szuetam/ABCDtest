@@ -311,9 +311,9 @@ def quest_check():
     Memory_lvl.query.filter(Memory_lvl.num==mem_lvl).first().update()
     db.session.commit()
     if option.correctness is True:
-        flash('Correct!')
+        flash(u'Correct!', 'flash')
     else:
-        flash(u'Buuuuuu!', 'error')
+        flash(u'Buuuuuuuuu!!!', 'error')
     return redirect(url_for('quest'))
 
     
