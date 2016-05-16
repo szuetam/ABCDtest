@@ -1,4 +1,3 @@
-# all the imports
 from flask_sqlalchemy import SQLAlchemy
 from flask import Flask, request, session, g, redirect, url_for, \
     abort, render_template, flash
@@ -184,11 +183,9 @@ class Answer(db.Model):
         if memory_lvl is None:
             memory_lvl = option.question.memorized_lvl()
             if not Memory_lvl.query.filter(Memory_lvl.num==option.question.memorized_lvl()).first():
-                #tworzymy go
                 lvl = Memory_lvl(memory_lvl)
                 db.session.add(lvl)
                 db.session.commit()
-            #przypisujemy do niego
             memory_lvl = Memory_lvl.query.filter(Memory_lvl.num==option.question.memorized_lvl()).first()
         self.memory_lvl = memory_lvl
         self.option = option
@@ -469,14 +466,10 @@ if __name__ == '__main__':
 
 
 #TODO
-# display memory lvl
-#
-# diplaying right answears (order etc)
-# ETA 4h
+# move to more variables and only updating functions
 #
 # some stats
 # % of learned material (how many qestions are in staging KISS
 # ETA 3h
 #
 # lepiej zamiast corectness zpisywac ktora padla odpowiedz zeby jesli powtarza sie ta sama zla odpowiedz to zareagowac
-#
