@@ -1,7 +1,6 @@
 {% extends "layout.html" %}
 {% block body %}
 
-{% if session.logged_in %}
 App goal: to teach you answering questions with chances of accurate answer between 90% and 95% for as long as possible..<br>
 Categories: {{ categories_count }} <br>
 Questions: {{ questions_count }} <br>
@@ -41,8 +40,6 @@ Answers False: {{ answers_false_count }} <br>
       </dl>
 </form>
   
-{% endif %}
-
 <h2> Categories </h2> 
 {% for category in categories %}
     <p>{{ category.name }}<br>
