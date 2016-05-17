@@ -64,7 +64,8 @@ class Question(db.Model):
     answered = db.Column(db.Integer)
     answered_correct = db.Column(db.Integer)
     answered_false = db.Column(db.Integer)
-   
+    #options = relationship("Option", cascade="all,delete-orphan", backref="question")   
+
     def update_all(self):
         self.answered_update()
         self.answered_correct_update()
@@ -88,6 +89,7 @@ class Question(db.Model):
         return self.answered_false
 
     def memorized_lvl(self):
+        self.answered_update()
         if self.answered == 0:
             return 0
         elif self.answered == self.answered_correct:
@@ -234,7 +236,6 @@ class Memory_lvl(db.Model):
         if not self.answers_num() == 0:
             return self.answers_correct_num() / float(self.answers_num())  
         else:
-            print ("error, there should be one answer when updating")
             return 0
 
     def update(self):
