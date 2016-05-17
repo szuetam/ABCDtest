@@ -64,7 +64,7 @@ class Question(db.Model):
     answered = db.Column(db.Integer)
     answered_correct = db.Column(db.Integer)
     answered_false = db.Column(db.Integer)
-    #options = relationship("Option", cascade="all,delete-orphan", backref="question")   
+    #options = db.relationship("Option", cascade="all,delete-orphan", backref="question")   
 
     def update_all(self):
         self.answered_update()
@@ -155,7 +155,7 @@ class Option(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     option_text = db.Column(db.String(800))
     correctness = db.Column(db.Boolean)
-    question_id = db.Column(db.Integer, db.ForeignKey('question.id'))
+    question_id = db.Column(db.Integer, db.ForeignKey('question.id', ondelete="CASCADE"))
     question = db.relationship('Question',
                                backref=db.backref('options', lazy='dynamic'))
 
@@ -476,6 +476,8 @@ if __name__ == '__main__':
 #
 # move to more variables and only updating functions
 # ETA - 3h 
+#
+# wyeliminować len na count
 #
 # some stats
 # % of learned material (how many qestions are in staging KISS
