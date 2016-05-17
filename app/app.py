@@ -1,12 +1,12 @@
-from flask_sqlalchemy import SQLAlchemy
-from flask import Flask, request, session, g, redirect, url_for, \
-    abort, render_template, flash
+import random
 from contextlib import closing
 from datetime import datetime, timedelta
-import random
+from flask_sqlalchemy import SQLAlchemy
+from flask import Flask, request, session, g, redirect, url_for, abort, render_template, flash
 
 app = Flask(__name__)
 app.config.from_envvar('settings.cfg', silent=True)
+#it is not using settings.cfg just I dont know how to replace silent=True while removing it
 app.config.update(
         DATABASE = 'ppl.db',
         DEBUG = True,
@@ -17,6 +17,7 @@ app.config.update(
         SQLALCHEMY_DATABASE_URI = 'sqlite:////tmp/test.db',
 )
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://localhost/pre-registration'
+#that above I would move to config higher
 db = SQLAlchemy(app)
 
 
@@ -29,7 +30,7 @@ def filter_shuffle(seq):
         return seq
 app.jinja_env.filters['shuffle'] = filter_shuffle
 
-
+#does it being used? rather not, if not delete
 def filter_memorized(the_question):
     try:
         last_false_answer=Answer.query.join(Option).filter(Option.correctness==False, Option.question==the_question).order_by(Answer.take_datetime.desc()).first()
@@ -39,7 +40,7 @@ def filter_memorized(the_question):
         return "0, albo brak odpowiedzi wogole"
 app.jinja_env.filters['memorized'] = filter_memorized
 
-
+#not used? then delete
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True)
@@ -273,6 +274,7 @@ def update_memory_lvl():
     memory_lvl.update()
     return redirect(url_for('show_entries'))
 
+
 @app.route('/update-memory-lvls', methods=['POST'])
 def update_memory_lvls():
     for lvl in Memory_lvl.query.all():
@@ -341,19 +343,16 @@ def show_entries():
 def add_entry():
     if not session.get('logged_in'):
         abort(401)
-
     # TODO: get_or_404
     category = Category.query.get(request.form['category_id'])
     quest = Question(question_text=request.form['question'],
                      category=category)
-
     db.session.add(quest)
     db.session.add(Option(option_text=request.form['answer_A'], correctness=True, question=quest))
     db.session.add(Option(option_text=request.form['answer_B'], correctness=False, question=quest))
     db.session.add(Option(option_text=request.form['answer_C'], correctness=False, question=quest))
     db.session.add(Option(option_text=request.form['answer_D'], correctness=False, question=quest))
     db.session.commit()
-
     flash('New question was successfully added')
     return redirect(url_for('show_entries'))
 
@@ -366,6 +365,7 @@ def del_entry():
     flash('Question was successfully deleted but not its options')
     return redirect(url_for('show_entries'))
 ##### add and its options!!
+
 
 @app.route('/del-all-questions', methods=['POST'])
 def del_all_questions():
@@ -392,6 +392,7 @@ def add_category():
     flash('New category was successfully added')
     return redirect(url_for('show_entries'))
 
+
 @app.route('/del-category', methods=['POST'])
 def del_category():
     category = Category.query.get(request.form['category_id'])
@@ -400,12 +401,14 @@ def del_category():
     flash('Category was successfully deleted')
     return redirect(url_for('show_entries'))
 
+
 @app.route('/del-all-categoriess', methods=['POST'])
 def del_all_categories():
     Category.query.delete()
     db.session.commit()
     flash('All categories ware successfully deleted')
     return redirect(url_for('show_entries'))
+
 
 @app.route('/check', methods=['POST'])
 def check():
@@ -465,11 +468,14 @@ if __name__ == '__main__':
     app.run()
 
 
-#TODO
+# TODO
+#
+# proper deleting with childs, and not deleting childs without parents when needed
+# ETA 3h - need to learn that
+#
 # move to more variables and only updating functions
+# ETA - 3h 
 #
 # some stats
 # % of learned material (how many qestions are in staging KISS
 # ETA 3h
-#
-# lepiej zamiast corectness zpisywac ktora padla odpowiedz zeby jesli powtarza sie ta sama zla odpowiedz to zareagowac
