@@ -370,7 +370,8 @@ def del_entry():
 
 @app.route('/del-all-questions', methods=['POST'])
 def del_all_questions():
-    Question.query.delete()
+    for q in Question.query.all():
+        db.session.delete(q)
     db.session.commit()
     flash('All questions ware successfully deleted')
     return redirect(url_for('show_entries'))
