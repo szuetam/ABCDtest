@@ -51,9 +51,7 @@ Answers False: {{ answers_false_count }} <br>
   </form><br><hr>
 {% endfor %}
     <form action="{{ url_for('del_all_categories') }}" method="post" class="del_all_cateries">
-      <dl>
-        <dd><input type="submit" value="Delete all categories">
-      </dl>
+        <input type="submit" value="Delete all categories">
     </form>
     <br><hr>
 
@@ -101,22 +99,18 @@ Answers False: {{ answers_false_count }} <br>
         {% for option in the_question.options|shuffle %}
         <input type="radio" name="option_id" value={{ option.id }}>{{ option.option_text|safe }}, id: {{ option.id }}, answers: {{ option.answers.count() }}, correctness: {{ option.correctness }} <br>
         {% endfor %}
-        <p><input type="submit" value="Check"><br>
+        <p><input type="submit" value="Check">
     </form>
     <form action="{{ url_for('del_entry') }}" method="post" class="del_entry">
-      <dl>
         <input type="hidden" name="question_id" value={{ the_question.id }}>
-        <dd><input type="submit" value="Delete Question">
-      </dl>
+        <input type="submit" value="Delete Question">
     </form>
     <br><hr>
 {% else %}
     <li><em>Unbelievable.  No entries here so far</em>
 {% endfor %}
     <form action="{{ url_for('del_all_questions') }}" method="post" class="del_all_questions">
-      <dl>
-        <dd><input type="submit" value="Delete all questions">
-      </dl>
+        <input type="submit" value="Delete all questions">
     </form>
     <br><hr>
 
@@ -139,9 +133,7 @@ Answers False: {{ answers_false_count }} <br>
     <li><em>Unbelievable.  No answer here so far</em>
 {% endfor %}
     <form action="{{ url_for('del_all_answers') }}" method="post" class="del_all_answers">
-      <dl>
-        <dd><input type="submit" value="Delete all answers">
-      </dl>
+        <input type="submit" value="Delete all answers">
     </form>
     <br><hr>
 
