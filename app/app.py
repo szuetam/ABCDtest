@@ -72,20 +72,15 @@ class Question(db.Model):
         self.answered_false_update()
 
     def answered_update(self):
-        answered = Answer.query.filter(Answer.question==self).all()
-        if answered:
-            answered = len(answered)
-        else:
-            answered = 0
-        self.answered = answered
-        return answered
+        self.answered = Answer.query.filter(Answer.question==self).count()
+        return self.answered
     
     def answered_correct_update(self):
-        self.answered_correct = len(Answer.query.join(Option).filter(Answer.question==self, Option.correctness==True).all())
+        self.answered_correct = Answer.query.join(Option).filter(Answer.question==self, Option.correctness==True).count()
         return self.answered_correct
 
     def answered_false_update(self):
-        self.answered_false = len(Answer.query.join(Option).filter(Answer.question==self, Option.correctness==False).all())
+        self.answered_false = Answer.query.join(Option).filter(Answer.question==self, Option.correctness==False).count()
         return self.answered_false
 
     def memorized_lvl(self):
@@ -96,8 +91,8 @@ class Question(db.Model):
             return self.answered_correct
         else:
             last_false_answer=Answer.query.join(Option).filter(Option.correctness==False, Option.question==self).order_by(Answer.take_datetime.desc()).first()
-            correct_answers_since_last_false_answer=Answer.query.join(Option).filter(Option.correctness==True, Option.question==self, Answer.take_datetime > last_false_answer.take_datetime).all()
-            return len(correct_answers_since_last_false_answer)
+            correct_answers_since_last_false_answer=Answer.query.join(Option).filter(Option.correctness==True, Option.question==self, Answer.take_datetime > last_false_answer.take_datetime).count()
+            return correct_answers_since_last_false_answer
     
     def memorized_period(self):
         if Memory_lvl.query.filter(Memory_lvl.num==self.memorized_lvl()).first():
@@ -221,16 +216,16 @@ class Memory_lvl(db.Model):
     time_sec = db.Column(db.Integer)
     
     def answers_num(self):
-        return len(Answer.query.filter(Answer.memory_lvl==self).all())
+        return Answer.query.filter(Answer.memory_lvl==self).count()
     
     def questions(self):
-        return len(Question.query.filter(Question.memorized_lvl==self.num).all())
+        return Question.query.filter(Question.memorized_lvl==self.num).count()
 
     def answers_correct_num(self):
-        return len(Answer.query.join(Option).filter(Option.correctness==True, Answer.memory_lvl==self).all())
+        return Answer.query.join(Option).filter(Option.correctness==True, Answer.memory_lvl==self).count()
     
     def answers_false_num(self):
-        return len(Answer.query.join(Option).filter(Option.correctness==False, Answer.memory_lvl==self).all())
+        return Answer.query.join(Option).filter(Option.correctness==False, Answer.memory_lvl==self).count()
     
     def ratio(self):
         if not self.answers_num() == 0:
@@ -480,9 +475,6 @@ if __name__ == '__main__':
 
 
 # TODO
-#
-# change len to count
-# ETA 1h
 #
 # move to more variables and only updating functions
 # ETA 3h 
