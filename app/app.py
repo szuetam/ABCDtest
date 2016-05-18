@@ -481,13 +481,11 @@ if __name__ == '__main__':
 
 # TODO
 #
-# proper deleting with childs, and not deleting childs without parents when needed
-# ETA 3h - need to learn that
+# change len to count
+# ETA 1h
 #
 # move to more variables and only updating functions
-# ETA - 3h 
-#
-# wyeliminować len na count
+# ETA 3h 
 #
 # some stats
 # % of learned material (how many qestions are in staging KISS
