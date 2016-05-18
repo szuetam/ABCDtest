@@ -284,6 +284,24 @@ def update_memory_lvls():
     return redirect(url_for('show_entries'))
 
 
+@app.route('/delete-memory-lvl', methods=['POST'])
+def delete_memory_lvl():
+    memory_lvl = Memory_lvl.query.get(request.form['memory_lvl_id'])
+    db.session.delete(memory_lvl)
+    db.session.commit()
+    flash('Memory lvl was successfully deleted')
+    return redirect(url_for('show_entries'))
+
+
+@app.route('/delete-all-memory-lvls', methods=['POST'])
+def delete_all_memory_lvls():
+    for m in Memory_lvl.query.all():
+        db.session.delete(m)
+    db.session.commit()
+    flash('All memory lvls ware successfully deleted')
+    return redirect(url_for('show_entries'))
+
+
 @app.route('/quest')
 def quest():
     answeredQuestions_pre=Question.query.filter(Question.answered > 0).all()
@@ -363,9 +381,8 @@ def del_entry():
     question = Question.query.get(request.form['question_id'])
     db.session.delete(question)
     db.session.commit()
-    flash('Question was successfully deleted but not its options')
+    flash('Question was successfully deleted with its options')
     return redirect(url_for('show_entries'))
-##### add and its options!!
 
 
 @app.route('/del-all-questions', methods=['POST'])
@@ -374,14 +391,6 @@ def del_all_questions():
         db.session.delete(q)
     db.session.commit()
     flash('All questions ware successfully deleted')
-    return redirect(url_for('show_entries'))
-
-
-@app.route('/del-all-options', methods=['POST'])
-def del_all_options():
-    Option.query.delete()
-    db.session.commit()
-    flash('All options ware successfully deleted')
     return redirect(url_for('show_entries'))
 
 

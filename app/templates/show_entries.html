@@ -64,15 +64,22 @@ Answers False: {{ answers_false_count }} <br>
 <form action="{{ url_for('update_memory_lvl') }}" method="post" class="update_memory_lvl">
         <input type="hidden" name="memory_lvl_id" value={{ memory_lvl.id }}>
         <input type="submit" value="Update Memory lvl">
-    <br><hr>
+</form>
+<form action="{{ url_for('delete_memory_lvl') }}" method="post" class="delete_memory_lvl">
+        <input type="hidden" name="memory_lvl_id" value={{ memory_lvl.id }}>
+        <input type="submit" value="Delete Memory lvl">
 </form><br>
+<br><hr>
 {% endfor %}
 
 <form action="{{ url_for('update_memory_lvls') }}" method="post" class="update_memory_lvls">
-      <dl>
-        <dd><input type="submit" value="Update all Memory lvls">
-    </dl><br><hr>
+    <input type="submit" value="Update all Memory lvls">
 </form>
+
+<form action="{{ url_for('delete_all_memory_lvls') }}" method="post" class="delete_all_memory_lvls">
+    <input type="submit" value="Delete all Memory lvls">
+</form>
+<br><hr>
 
 <h2> Questions & Options</h2>
 {% for the_question in questions %}
@@ -109,13 +116,6 @@ Answers False: {{ answers_false_count }} <br>
     <form action="{{ url_for('del_all_questions') }}" method="post" class="del_all_questions">
       <dl>
         <dd><input type="submit" value="Delete all questions">
-      </dl>
-    </form>
-    <br><hr>
-    <form action="{{ url_for('del_all_options') }}" method="post" class="del_all_options">
-      <dl>
-          <dd><input type="submit" value="Delete all options">
-          Only if there is no Questions, otherwise troubles!
       </dl>
     </form>
     <br><hr>
