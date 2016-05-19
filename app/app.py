@@ -64,7 +64,11 @@ class Question(db.Model):
     answered = db.Column(db.Integer)
     answered_correct = db.Column(db.Integer)
     answered_false = db.Column(db.Integer)
-    #options = db.relationship("Option", cascade="all,delete-orphan", backref="question")   
+
+
+    #Answer_ob.query.join(Option_ob).filter(Option_ob.correctness==False, Option_ob.question==the_question).order_by(Answer_ob.take_datetime.desc()).first().take_datetime
+    #Answer_ob.query.join(Option_ob).filter(Option_ob.correctness==True, Option_ob.question==the_question).order_by(Answer_ob.take_datetime.desc()).first().take_datetime
+
 
     def update_all(self):
         self.answered_update()
@@ -332,7 +336,19 @@ def quest_check():
         flash(u'Buuuuuuuuu!!!', 'error')
     return redirect(url_for('quest'))
 
-    
+
+@app.route('/question/<question_id>')
+def show_question(question_id):
+    return render_template('show_question.html', 
+            Question_ob=Question,
+            Option_ob=Option,
+            Answer_ob=Answer,
+            Memory_lvl_ob=Memory_lvl,
+            memory_lvls=Memory_lvl.query.all(),
+            the_question=Question.query.filter(Question.id==question_id).first(),
+            )
+
+
 @app.route('/')
 def show_entries():
     return render_template('show_entries.html', 
@@ -476,8 +492,9 @@ if __name__ == '__main__':
 
 # TODO
 #
-# move to more variables and only updating functions
-# ETA 3h 
+# simple question and single question details site to speed up
+# ETA 1h
+#
 #
 # some stats
 # % of learned material (how many qestions are in staging KISS
