@@ -355,11 +355,14 @@ def show_entries():
             categories_count=Category.query.count(),
             questions_count=Question.query.count(),
             answers_count=Answer.query.count(),
+            
+            
             memory_lvls=Memory_lvl.query.all(),
-            questions=Question.query.all(),
             categories=Category.query.all(),
+            
+            questions=Question.query.all(),
+            
             answers=Answer.query.all(),
-            options=Option.query.all(),
             )
 
 
@@ -455,28 +458,6 @@ def del_all_answers():
     Answer.query.delete()
     db.session.commit()
     flash('All answers ware successfully deleted')
-    return redirect(url_for('show_entries'))
-
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    error = None
-    if request.method == 'POST':
-        if request.form['username'] != 'ppl':
-            error = 'Invalid username'
-        elif request.form['password'] != 'ppl':
-            error = 'Invalid password'
-        else:
-            session['logged_in'] = True
-            flash('You were logged in')
-            return redirect(url_for('show_entries'))
-    return render_template('login.html', error=error)
-
-
-@app.route('/logout')
-def logout():
-    session.pop('logged_in', None)
-    flash('You were logged out')
     return redirect(url_for('show_entries'))
 
 
