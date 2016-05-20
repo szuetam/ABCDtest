@@ -327,9 +327,9 @@ def quest_check():
     if option.correctness is True:
         flash(u'Correct!', 'flash')
     else:
-        correct_option = option.question.optins.query.filter(Option.correctness==True).first()
+        correct_option = option.question.options.filter(Option.correctness==True).first()
         flash(u'Buuuuuuuuu!!!', 'error')
-        flash(u'Corect is: %s', correct_option.option_text, 'flash')
+        flash(correct_option.option_text, 'flash')
     return redirect(url_for('quest'))
 
 
@@ -346,6 +346,19 @@ def show_question(question_id):
             )
 
 
+
+
+
+@app.route('/memory-lvls')
+def show_memory_lvls():
+    memory_lvls=Memory_lvl.query.all()
+    memory_lvls.sort(key=lambda x: x.num, reverse=True)
+    return render_template('show_memory_lvls.html', 
+            Memory_lvl=Memory_lvl,
+            memory_lvls=memory_lvls,
+            )
+
+
 @app.route('/')
 def show_entries():
     memory_lvls=Memory_lvl.query.all()
@@ -354,10 +367,10 @@ def show_entries():
             categories_count=Category.query.count(),
             questions_count=Question.query.count(),
             answers_count=Answer.query.count(),
-            Question_ob=Question,
-            Option_ob=Option,
-            Answer_ob=Answer,
-            Memory_lvl_ob=Memory_lvl,
+            Question=Question,
+            Option=Option,
+            Answer=Answer,
+            Memory_lvl=Memory_lvl,
             answers_true_count=Answer.query.join(Option).filter(Option.correctness==True).count(),
             answers_false_count=Answer.query.join(Option).filter(Option.correctness==False).count(),
             memory_lvls=memory_lvls,

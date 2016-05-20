@@ -1,0 +1,38 @@
+{% extends "layout.html" %}
+{% block body %}
+
+App goal: to teach you answering questions with chances of accurate answer between 90% and 95% for as long as possible..<br>
+Categories: {{ categories_count }} <br>
+Questions: {{ questions_count }} <br>
+Answers: {{ answers_count }} <br>
+Answers Correct: {{ answers_true_count }} <br>
+Answers False: {{ answers_false_count }} <br>
+
+<h2> Memory lvls </h2> 
+{% for memory_lvl in memory_lvls %}
+<p>lvl: {{ memory_lvl.num }}, 
+answers: {{ memory_lvl.answers_num() }}, 
+({{ memory_lvl.answers_correct_num() }} /{{ memory_lvl.answers_false_num() }} = ratio +/-: {{ memory_lvl.ratio() }} ), 
+sec: {{ memory_lvl.time_sec }},
+questions (why this does not work??): {{ memory_lvl.questions.count() }}<br>
+<form action="{{ url_for('update_memory_lvl') }}" method="post" class="update_memory_lvl">
+        <input type="hidden" name="memory_lvl_id" value={{ memory_lvl.id }}>
+        <input type="submit" value="Update Memory lvl">
+</form>
+<form action="{{ url_for('delete_memory_lvl') }}" method="post" class="delete_memory_lvl">
+        <input type="hidden" name="memory_lvl_id" value={{ memory_lvl.id }}>
+        <input type="submit" value="Delete Memory lvl">
+</form><br>
+<br><hr>
+{% endfor %}
+
+<form action="{{ url_for('update_memory_lvls') }}" method="post" class="update_memory_lvls">
+    <input type="submit" value="Update all Memory lvls">
+</form>
+
+<form action="{{ url_for('delete_all_memory_lvls') }}" method="post" class="delete_all_memory_lvls">
+    <input type="submit" value="Delete all Memory lvls">
+</form>
+<br><hr>
+
+{% endblock %}
