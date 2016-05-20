@@ -483,7 +483,7 @@ def del_all_answers():
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(port=5550)
 
 
 # TODO
