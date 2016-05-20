@@ -7,7 +7,11 @@ Questions: {{ questions_count }} <br>
 Answers: {{ answers_count }} <br>
 Answers Correct: {{ answers_true_count }} <br>
 Answers False: {{ answers_false_count }} <br>
-
+<br>
+Questions: {{ stat.questions }} <br>
+Questions in 95-99%mem: {{ stat.questions_in_mem }} <br>
+Questions to ver: {{stat.questions_to_ver }} <br>
+                       
 <h2> Memory lvls </h2> 
 {% for memory_lvl in memory_lvls %}
 <p>lvl {{ memory_lvl.num }}, 
