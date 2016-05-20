@@ -469,10 +469,8 @@ if __name__ == '__main__':
 
 
 # TODO
-#
-# simple question and single question details site to speed up
-# ETA 1h
-#
+# fix memory levels
+# ETA 2h
 #
 # some stats
 # % of learned material (how many qestions are in staging KISS
