@@ -178,7 +178,6 @@ class Answer(db.Model):
         # memory level that question was before answering if any
         memory_lvl_to_update.update()
 
-
     def __repr__(self):
         return '<Answer %r>' % self.question
 
@@ -335,9 +334,6 @@ def show_question(question_id):
             )
 
 
-
-
-
 @app.route('/memory-lvls')
 def show_memory_lvls():
     memory_lvls=Memory_lvl.query.all()
@@ -470,9 +466,8 @@ if __name__ == '__main__':
     app.add_url_rule('/favicon.ico', redirect_to=url_for('static', filename='favicon.ico'))
 
 # TODO
-# fix memory levels
-# ETA 2h
 #
 # some stats
 # % of learned material (how many qestions are in staging KISS
+# 
 # ETA 3h
