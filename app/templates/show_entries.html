@@ -61,7 +61,7 @@ Answers False: {{ answers_false_count }} <br>
 answers: {{ memory_lvl.answers_num() }}, 
 ({{ memory_lvl.answers_correct_num() }} /{{ memory_lvl.answers_false_num() }} = ratio +/-: {{ memory_lvl.ratio() }} ), 
 sec: {{ memory_lvl.time_sec }},
-questions: {{ memory_lvl.questions.count() }}<br>
+questions (why this does not work??): {{ memory_lvl.questions.count() }}<br>
 <form action="{{ url_for('update_memory_lvl') }}" method="post" class="update_memory_lvl">
         <input type="hidden" name="memory_lvl_id" value={{ memory_lvl.id }}>
         <input type="submit" value="Update Memory lvl">

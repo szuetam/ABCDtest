@@ -140,23 +140,23 @@ class Answer(db.Model):
     memory_lvl = db.relationship('Memory_lvl',
                              backref=db.backref('answers', lazy='dynamic'))
     
-    def __init__(self, option, memory_lvl=None, take_datetime=None):
+    def __init__(self, option, take_datetime=None):
         self.option = option
         if take_datetime is None:
             take_datetime = datetime.utcnow()
         self.take_datetime = take_datetime
         question = option.question
-        if memory_lvl is None:
-            # it should be memory level of question, if it was None then give that Question Memory lvl=0
-            # if there is not Memory lvl 0 create it and asign it to question
-            if question.memory_lvl == None:
-                if Memory_lvl.query.filter(Memory_lvl.num==0).first():
-                    question.memory_lvl = Memory_lvl.query.filter(Memory_lvl.num==0).first()
-                else:
-                    db.session.add(Memory_lvl(0))
-                    db.session.commit()
-                    question.memory_lvl = Memory_lvl.query.filter(Memory_lvl.num==0).first()
-            self.memory_lvl = question.memory_lvl
+        # it should be memory level of question, if it was None then give that Question Memory lvl=0
+        # if there is not Memory lvl 0 create it and asign it to question
+        if question.memory_lvl == None:
+            if Memory_lvl.query.filter(Memory_lvl.num==0).first():
+                question.memory_lvl = Memory_lvl.query.filter(Memory_lvl.num==0).first()
+            else:
+                db.session.add(Memory_lvl(0))
+                db.session.commit()
+                question.memory_lvl = Memory_lvl.query.filter(Memory_lvl.num==0).first()
+        memory_lvl_to_update = option.question.memory_lvl
+        self.memory_lvl = question.memory_lvl
         # when answer is given question has to increment its memory lvl if answer correct, or zero if false
         if option.correctness:
             # if there is no such level create it
@@ -174,6 +174,10 @@ class Answer(db.Model):
                 db.session.commit()
                 option.question.memory_lvl = Memory_lvl.query.filter(Memory_lvl.num==0).first()
         db.session.commit()
+        # in the end update memory lvl time
+        # memory level that question was before answering if any
+        memory_lvl_to_update.update()
+
 
     def __repr__(self):
         return '<Answer %r>' % self.question
@@ -214,14 +218,17 @@ class Memory_lvl(db.Model):
             return 0
 
     def update(self):
-        # execute only after adding new answer, otherwise, buuuu!!!
+        # execute only after adding new answer, otherwise, might buuuu!!!
         # update memory level of num which it had before answering after answering NOT
         # any other, like one higher!
+        print("update")
+        print(self)
         if self.ratio() > 0.99:
-            self.time_sec = self.time_sec*2
+            self.time_sec = (self.time_sec+1)*2
         elif self.ratio() < 0.95:
-            self.time_sec = self.time_sec/2
+            self.time_sec = self.time_sec/2+1
         db.session.commit()
+        print(self.time_sec)
         return None 
 
     def __init__(self, num):
@@ -285,16 +292,27 @@ def delete_all_memory_lvls():
 
 @app.route('/quest')
 def quest():
-    answeredQuestions_pre=Question.query.filter(Question.answered > 0).all()
-    answeredQuestions_not_in_mem = []
-    for q in answeredQuestions_pre:
-        if not q.in_memory():
-            answeredQuestions_not_in_mem.append(q)
-    answeredQuestions_not_in_mem.sort(key=lambda x: x.memorized_lvl(), reverse=True)
-    if answeredQuestions_not_in_mem:
-        the_question=answeredQuestions_not_in_mem[-1]
+    #for q in Question.query.all():
+    #    print(q)
+    #    print(q.memory_lvl)
+    #
+    questions_with_mem_lvl = Question.query.filter(Question.memory_lvl != None).all()
+    if questions_with_mem_lvl:
+        print("there are some with mem lvl")
+        answeredQuestions_not_in_mem = []
+        for q in questions_with_mem_lvl:
+            if not q.in_memory():
+                answeredQuestions_not_in_mem.append(q)
+        answeredQuestions_not_in_mem.sort(key=lambda x: x.memory_lvl.num, reverse=True)
+        if answeredQuestions_not_in_mem:
+            print("there are some with mem lvl and not in mem")
+            the_question=questions_with_mem_lvl[-1]
+        else:
+            print("there are some with mem lvl but all in mem")
+            the_question = Question.query.filter(Question.memory_lvl == None).first()
     else:
-        the_question = Question.query.filter(Question.answered == 0).first()
+        print("there are no q in mem lvl")
+        the_question = Question.query.filter(Question.memory_lvl == None).first()
     return render_template('quest.html', 
             the_question=the_question,
             )
@@ -309,7 +327,9 @@ def quest_check():
     if option.correctness is True:
         flash(u'Correct!', 'flash')
     else:
+        correct_option = option.question.optins.query.filter(Option.correctness==True).first()
         flash(u'Buuuuuuuuu!!!', 'error')
+        flash(u'Corect is: %s', correct_option.option_text, 'flash')
     return redirect(url_for('quest'))
 
 
@@ -328,6 +348,8 @@ def show_question(question_id):
 
 @app.route('/')
 def show_entries():
+    memory_lvls=Memory_lvl.query.all()
+    memory_lvls.sort(key=lambda x: x.num, reverse=True)
     return render_template('show_entries.html', 
             categories_count=Category.query.count(),
             questions_count=Question.query.count(),
@@ -336,9 +358,9 @@ def show_entries():
             Option_ob=Option,
             Answer_ob=Answer,
             Memory_lvl_ob=Memory_lvl,
-            memory_lvls=Memory_lvl.query.all(),
             answers_true_count=Answer.query.join(Option).filter(Option.correctness==True).count(),
             answers_false_count=Answer.query.join(Option).filter(Option.correctness==False).count(),
+            memory_lvls=memory_lvls,
             questions=Question.query.all(),
             categories=Category.query.all(),
             answers=Answer.query.all(),
