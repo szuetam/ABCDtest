@@ -30,29 +30,6 @@ def filter_shuffle(seq):
         return seq
 app.jinja_env.filters['shuffle'] = filter_shuffle
 
-#does it being used? rather not, if not delete
-def filter_memorized(the_question):
-    try:
-        last_false_answer=Answer.query.join(Option).filter(Option.correctness==False, Option.question==the_question).order_by(Answer.take_datetime.desc()).first()
-        result=Answer.query.filter(Answer.take_datetime > last_false_answer.take_datetime)
-        return result.count()
-    except:
-        return "0, albo brak odpowiedzi wogole"
-app.jinja_env.filters['memorized'] = filter_memorized
-
-#not used? then delete
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True)
-    email = db.Column(db.String(120), unique=True)
-
-    def __init__(self, username, email):
-        self.username = username
-        self.email = email
-
-    def __repr__(self):
-        return '<User %r>' % self.username
-
 
 class Question(db.Model):
     id = db.Column(db.Integer, primary_key=True)
