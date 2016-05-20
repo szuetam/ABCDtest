@@ -57,8 +57,11 @@ Answers False: {{ answers_false_count }} <br>
 
 <h2> Memory lvls </h2> 
 {% for memory_lvl in memory_lvls %}
-<p>lvl: {{ memory_lvl.num }}, answers: {{ memory_lvl.answers_num() }}, ({{ memory_lvl.answers_correct_num() }} /{{ memory_lvl.answers_false_num() }} = ratio +/-: {{ memory_lvl.ratio() }} ), sec: {{ memory_lvl.time_sec }}<br>
-<p>questions: {{ memory_lvl.questions() }}<br>
+<p>lvl: {{ memory_lvl.num }}, 
+answers: {{ memory_lvl.answers_num() }}, 
+({{ memory_lvl.answers_correct_num() }} /{{ memory_lvl.answers_false_num() }} = ratio +/-: {{ memory_lvl.ratio() }} ), 
+sec: {{ memory_lvl.time_sec }},
+questions: {{ memory_lvl.questions.count() }}<br>
 <form action="{{ url_for('update_memory_lvl') }}" method="post" class="update_memory_lvl">
         <input type="hidden" name="memory_lvl_id" value={{ memory_lvl.id }}>
         <input type="submit" value="Update Memory lvl">
@@ -86,6 +89,7 @@ Answers False: {{ answers_false_count }} <br>
         <p>{{ the_question.category.name|safe }}<br>
         <p><h3>{{ the_question.question_text }}</h3>
         <p>Answered (correct / false) <b> {{ the_question.answered }} ( {{ the_question.answered_correct }} / {{ the_question.answered_false }}) </b><br>
+        <p>Memory lvl <b> {{ the_question.memory_lvl.num }} </b><br>
         <p>
         ID: {{ the_question.id }}<br>
         {% for option in the_question.options|shuffle %}
@@ -115,7 +119,7 @@ Answers False: {{ answers_false_count }} <br>
     <p>Answer id {{ answer.id|safe }}<br>
     <p>Answer option id {{ answer.option.id|safe }}<br>
         Answer option given correctness {{ answer.option.correctness|safe }}<br>
-        Question id {{ answer.question.id|safe }}<br>
+        Question id {{ answer.option.question.id|safe }}<br>
         Date {{ answer.take_datetime|safe }}<br>
         Memory level {{ answer.memory_lvl.num|safe }}<br>
     <form action="{{ url_for('del_answer') }}" method="post" class="del_answer">

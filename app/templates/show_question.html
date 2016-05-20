@@ -8,16 +8,14 @@
         <p>{{ the_question.category.name|safe }}<br>
         <p><h3>{{ the_question.question_text }}</h3>
         <p>Answered (correct / false) <b> {{ the_question.answered }} ( {{ the_question.answered_correct }} / {{ the_question.answered_false }}) </b><br>
-        <p><b>Level of memorization {{ the_question.memorized_lvl() }} ( {{ the_question.memorized_period() }} sec) </b><br>
+        <p><b>Level of memorization {{ the_question.memory_lvl.num }} ( {{ the_question.memorized_period() }} sec) </b><br>
         <p><b>In memory now* {{ the_question.in_memory() }} </b><br>
         <p><b>Time of forgeting* {{ the_question.time_of_forgeting() }} </b><br>
         <p><b>Potential in memory {{ the_question.potential_in_memory() }} </b><br>
         <p><b>Potential in memory but not in memory {{ the_question.potential_in_memory_but_not_in_memory() }} </b><br>
         <p><b>Time left in memory* {{ the_question.time_left_in_memory() }} </b><br>
-        <p><b>Last false {{ Answer_ob.query.join(Option_ob).filter(Option_ob.correctness==False, Option_ob.question==the_question).order_by(Answer_ob.take_datetime.desc()).first().take_datetime }} </b><br>
-        <p><b>Last false new emthod {{ the_question.answers.filter(Option_ob.correctness==False).order_by(Answer_ob.take_datetime.desc()).first().take_datetime }} </b><br>
-        <p><b>Last true {{ Answer_ob.query.join(Option_ob).filter(Option_ob.correctness==True, Option_ob.question==the_question).order_by(Answer_ob.take_datetime.desc()).first().take_datetime }} </b><br>
-        <p><b>Last true {{ Answer_ob.query.join(Option_ob).filter(Option_ob.correctness==True, Option_ob.question==the_question).order_by(Answer_ob.take_datetime.desc()).first().take_datetime }} </b><br>
+        <p><b>Last false {{ Answer.query.join(Option).filter(Option.correctness==False, Option.question==the_question).order_by(Answer.take_datetime.desc()).first().take_datetime }} </b><br>
+        <p><b>Last true {{ Answer.query.join(Option).filter(Option.correctness==True, Option.question==the_question).order_by(Answer.take_datetime.desc()).first().take_datetime }} </b><br>
         <p>
         ID: {{ the_question.id }}<br>
         {% for option in the_question.options|shuffle %}

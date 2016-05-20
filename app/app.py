@@ -59,8 +59,8 @@ class Question(db.Model):
         return self.answered_false
 
     def memorized_period(self):
-        if Memory_lvl.query.filter(Memory_lvl.num==self.memorized_lvl()).first():
-            return Memory_lvl.query.filter(Memory_lvl.num==self.memorized_lvl()).first().time_sec
+        if Memory_lvl.query.filter(Memory_lvl.num==self.memory_lvl.num).first():
+            return Memory_lvl.query.filter(Memory_lvl.num==self.memory_lvl.num).first().time_sec
         else:
             return 0
 
@@ -77,7 +77,7 @@ class Question(db.Model):
             return False
     
     def potential_in_memory(self):
-        if self.memorized_lvl() > 0:
+        if self.memory_lvl.num > 0:
             return True
         else:
             return False
@@ -154,6 +154,7 @@ class Answer(db.Model):
                     question.memory_lvl = Memory_lvl.query.filter(Memory_lvl.num==0).first()
                 else:
                     db.session.add(Memory_lvl(0))
+                    db.session.commit()
                     question.memory_lvl = Memory_lvl.query.filter(Memory_lvl.num==0).first()
             self.memory_lvl = question.memory_lvl
         # when answer is given question has to increment its memory lvl if answer correct, or zero if false
@@ -163,12 +164,14 @@ class Answer(db.Model):
                 option.question.memory_lvl = Memory_lvl.query.filter(Memory_lvl.num==option.question.memory_lvl.num+1).first()
             else:
                 db.session.add(Memory_lvl(option.question.memory_lvl.num+1))
+                db.session.commit()
                 option.question.memory_lvl = Memory_lvl.query.filter(Memory_lvl.num==option.question.memory_lvl.num+1).first()
         elif not option.correctness:
             if Memory_lvl.query.filter(Memory_lvl.num==0).first():
                 option.question.memory_lvl = Memory_lvl.query.filter(Memory_lvl.num==0).first()
             else:
                 db.session.add(Memory_lvl(0))
+                db.session.commit()
                 option.question.memory_lvl = Memory_lvl.query.filter(Memory_lvl.num==0).first()
         db.session.commit()
 
@@ -313,10 +316,11 @@ def quest_check():
 @app.route('/question/<question_id>')
 def show_question(question_id):
     return render_template('show_question.html', 
-            Question_ob=Question,
-            Option_ob=Option,
-            Answer_ob=Answer,
-            Memory_lvl_ob=Memory_lvl,
+            Question=Question,
+            Option=Option,
+            Answer=Answer,
+            Memory_lvl=Memory_lvl,
+            Category=Category,
             memory_lvls=Memory_lvl.query.all(),
             the_question=Question.query.filter(Question.id==question_id).first(),
             )
