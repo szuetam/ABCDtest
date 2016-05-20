@@ -5,7 +5,7 @@
 
 {% if the_question %}
     <br><p>
-        <p><h6>Memorized lvl: {{ the_question.memorized_lvl()|safe }}</h6><br>
+        <p><h6>Memorized lvl: {{ the_question.memory_lvl.num|safe }}</h6><br>
     <form action="{{ url_for('quest_check') }}" method="post" class="quest_check">
         <p><h6>{{ the_question.category.name|safe }}</h6><br>
         <p><h3>{{ the_question.question_text }}</h3>

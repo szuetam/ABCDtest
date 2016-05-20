@@ -36,45 +36,28 @@ class Question(db.Model):
     question_text = db.Column(db.String(800))
     pub_date = db.Column(db.DateTime, default=datetime.utcnow)
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'))
-    category = db.relationship('Category',
-                               backref=db.backref('questions', lazy='dynamic'))
+    memory_lvl_id = db.Column(db.Integer, db.ForeignKey('memory_lvl.id'))
     answered = db.Column(db.Integer)
     answered_correct = db.Column(db.Integer)
     answered_false = db.Column(db.Integer)
-
-
-    #Answer_ob.query.join(Option_ob).filter(Option_ob.correctness==False, Option_ob.question==the_question).order_by(Answer_ob.take_datetime.desc()).first().take_datetime
-    #Answer_ob.query.join(Option_ob).filter(Option_ob.correctness==True, Option_ob.question==the_question).order_by(Answer_ob.take_datetime.desc()).first().take_datetime
-
-
-    def update_all(self):
-        self.answered_update()
-        self.answered_correct_update()
-        self.answered_false_update()
+    
+    memory_lvl = db.relationship('Memory_lvl',
+                               backref=db.backref('questions', lazy='dynamic'))
+    category = db.relationship('Category',
+                               backref=db.backref('questions', lazy='dynamic'))
 
     def answered_update(self):
-        self.answered = Answer.query.filter(Answer.question==self).count()
+        self.answered = Answer.query.filter(Answer.option.question==self).count()
         return self.answered
     
     def answered_correct_update(self):
-        self.answered_correct = Answer.query.join(Option).filter(Answer.question==self, Option.correctness==True).count()
+        self.answered_correct = Answer.query.join(Option).filter(Answer.option.question==self, Option.correctness==True).count()
         return self.answered_correct
 
     def answered_false_update(self):
-        self.answered_false = Answer.query.join(Option).filter(Answer.question==self, Option.correctness==False).count()
+        self.answered_false = Answer.query.join(Option).filter(Answer.option.question==self, Option.correctness==False).count()
         return self.answered_false
 
-    def memorized_lvl(self):
-        self.answered_update()
-        if self.answered == 0:
-            return 0
-        elif self.answered == self.answered_correct:
-            return self.answered_correct
-        else:
-            last_false_answer=Answer.query.join(Option).filter(Option.correctness==False, Option.question==self).order_by(Answer.take_datetime.desc()).first()
-            correct_answers_since_last_false_answer=Answer.query.join(Option).filter(Option.correctness==True, Option.question==self, Answer.take_datetime > last_false_answer.take_datetime).count()
-            return correct_answers_since_last_false_answer
-    
     def memorized_period(self):
         if Memory_lvl.query.filter(Memory_lvl.num==self.memorized_lvl()).first():
             return Memory_lvl.query.filter(Memory_lvl.num==self.memorized_lvl()).first().time_sec
@@ -121,7 +104,9 @@ class Question(db.Model):
             pub_date = datetime.utcnow()
         self.pub_date = pub_date
         self.category = category
-        self.update_all()
+        self.answered = 0
+        self.answered_correct = 0
+        self.answered_false = 0
 
     def __repr__(self):
         return '<Question %r>' % self.question_text
@@ -147,34 +132,45 @@ class Option(db.Model):
 class Answer(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     take_datetime = db.Column(db.DateTime, default=datetime.utcnow)
-    question_id = db.Column(db.Integer, db.ForeignKey('question.id'))
-    question = db.relationship('Question',
-                               backref=db.backref('answers', lazy='dynamic'))
     option_id = db.Column(db.Integer, db.ForeignKey('option.id'))
+    memory_lvl_id = db.Column(db.Integer, db.ForeignKey('memory_lvl.id'))
+    
     option = db.relationship('Option',
                              backref=db.backref('answers', lazy='dynamic'))
-    memory_lvl_id = db.Column(db.Integer, db.ForeignKey('memory_lvl.id'))
     memory_lvl = db.relationship('Memory_lvl',
                              backref=db.backref('answers', lazy='dynamic'))
     
-    def __init__(self, option, question=None, memory_lvl=None, take_datetime=None):
-        # For future me, not to assign memory_lvl of quesion after (this is always 0 for fals) but before
-        if memory_lvl is None:
-            memory_lvl = option.question.memorized_lvl()
-            if not Memory_lvl.query.filter(Memory_lvl.num==option.question.memorized_lvl()).first():
-                lvl = Memory_lvl(memory_lvl)
-                db.session.add(lvl)
-                db.session.commit()
-            memory_lvl = Memory_lvl.query.filter(Memory_lvl.num==option.question.memorized_lvl()).first()
-        self.memory_lvl = memory_lvl
+    def __init__(self, option, memory_lvl=None, take_datetime=None):
         self.option = option
         if take_datetime is None:
             take_datetime = datetime.utcnow()
         self.take_datetime = take_datetime
-        if question is None:
-            question = option.question
-        self.question = question
-        self.question.update_all()
+        question = option.question
+        if memory_lvl is None:
+            # it should be memory level of question, if it was None then give that Question Memory lvl=0
+            # if there is not Memory lvl 0 create it and asign it to question
+            if question.memory_lvl == None:
+                if Memory_lvl.query.filter(Memory_lvl.num==0).first():
+                    question.memory_lvl = Memory_lvl.query.filter(Memory_lvl.num==0).first()
+                else:
+                    db.session.add(Memory_lvl(0))
+                    question.memory_lvl = Memory_lvl.query.filter(Memory_lvl.num==0).first()
+            self.memory_lvl = question.memory_lvl
+        # when answer is given question has to increment its memory lvl if answer correct, or zero if false
+        if option.correctness:
+            # if there is no such level create it
+            if Memory_lvl.query.filter(Memory_lvl.num==option.question.memory_lvl.num+1).first():
+                option.question.memory_lvl = Memory_lvl.query.filter(Memory_lvl.num==option.question.memory_lvl.num+1).first()
+            else:
+                db.session.add(Memory_lvl(option.question.memory_lvl.num+1))
+                option.question.memory_lvl = Memory_lvl.query.filter(Memory_lvl.num==option.question.memory_lvl.num+1).first()
+        elif not option.correctness:
+            if Memory_lvl.query.filter(Memory_lvl.num==0).first():
+                option.question.memory_lvl = Memory_lvl.query.filter(Memory_lvl.num==0).first()
+            else:
+                db.session.add(Memory_lvl(0))
+                option.question.memory_lvl = Memory_lvl.query.filter(Memory_lvl.num==0).first()
+        db.session.commit()
 
     def __repr__(self):
         return '<Answer %r>' % self.question
@@ -216,6 +212,8 @@ class Memory_lvl(db.Model):
 
     def update(self):
         # execute only after adding new answer, otherwise, buuuu!!!
+        # update memory level of num which it had before answering after answering NOT
+        # any other, like one higher!
         if self.ratio() > 0.99:
             self.time_sec = self.time_sec*2
         elif self.ratio() < 0.95:
@@ -226,8 +224,6 @@ class Memory_lvl(db.Model):
     def __init__(self, num):
         if num == 0:
             time_sec = 0
-        elif num == 1:
-            time_sec = 1
         else:
             time_sec = Memory_lvl.query.filter(Memory_lvl.num==(num-1)).first().time_sec
         self.num = num
@@ -250,6 +246,12 @@ def update_memory_lvl():
     memory_lvl   =   Memory_lvl.query.get(request.form['memory_lvl_id'])
     memory_lvl.update()
     return redirect(url_for('show_entries'))
+
+
+@app.route('/clean')
+def clean():
+    db.drop_all()
+    db.create_all()
 
 
 @app.route('/update-memory-lvls', methods=['POST'])
@@ -297,15 +299,9 @@ def quest():
 
 @app.route('/quest-check', methods=['POST'])
 def quest_check():
-    if not session.get('logged_in'):
-        abort(401)
-    option   =   Option.query.get(request.form['option_id'])
+    option = Option.query.get(request.form['option_id'])
     answer = Answer(option)
     db.session.add(answer)
-    mem_lvl = answer.question.memorized_lvl()
-    if not Memory_lvl.query.filter(Memory_lvl.num==mem_lvl).first():
-        db.session.add(Memory_lvl(mem_lvl))
-    Memory_lvl.query.filter(Memory_lvl.num==mem_lvl).first().update()
     db.session.commit()
     if option.correctness is True:
         flash(u'Correct!', 'flash')
