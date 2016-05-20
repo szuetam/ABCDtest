@@ -484,7 +484,7 @@ def del_all_answers():
 
 if __name__ == '__main__':
     app.run(port=5550)
-
+    app.add_url_rule('/favicon.ico', redirect_to=url_for('static', filename='favicon.ico'))
 
 # TODO
 # fix memory levels
