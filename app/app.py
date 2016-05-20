@@ -7,7 +7,7 @@ from flask import Flask, request, session, g, redirect, url_for, abort, render_t
 app = Flask(__name__)
 app.config.from_envvar('settings.cfg', silent=True)
 #it is not using settings.cfg just I dont know how to replace silent=True while removing it
-app.config.update
+app.config.update(
         DATABASE = 'ppl.db',
         DEBUG = True,
         SECRET_KEY = 'development key',
@@ -485,6 +485,7 @@ def del_all_answers():
 if __name__ == '__main__':
     app.run(port=5550)
     app.add_url_rule('/favicon.ico', redirect_to=url_for('static', filename='favicon.ico'))
+    db.create_all()
     if not Stat.query.first():
         db.session.add(Stat())
         db.session.commit()
