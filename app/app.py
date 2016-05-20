@@ -221,14 +221,11 @@ class Memory_lvl(db.Model):
         # execute only after adding new answer, otherwise, might buuuu!!!
         # update memory level of num which it had before answering after answering NOT
         # any other, like one higher!
-        print("update")
-        print(self)
         if self.ratio() > 0.99:
             self.time_sec = (self.time_sec+1)*2
         elif self.ratio() < 0.95:
             self.time_sec = self.time_sec/2+1
         db.session.commit()
-        print(self.time_sec)
         return None 
 
     def __init__(self, num):
@@ -292,33 +289,19 @@ def delete_all_memory_lvls():
 
 @app.route('/quest')
 def quest():
-    #for q in Question.query.all():
-    #    print(q)
-    #    print(q.memory_lvl)
-    #
     questions_with_mem_lvl = Question.query.filter(Question.memory_lvl != None).all()
     if questions_with_mem_lvl:
-        print("there are some with mem lvl")
-        print(questions_with_mem_lvl)
         answeredQuestions_not_in_mem = []
         for q in questions_with_mem_lvl:
             if not q.in_memory():
                 answeredQuestions_not_in_mem.append(q)
         answeredQuestions_not_in_mem.sort(key=lambda x: x.memory_lvl.num, reverse=True)
         if answeredQuestions_not_in_mem:
-            print("there are some with mem lvl and not in mem")
-            print(answeredQuestions_not_in_mem)
             the_question=answeredQuestions_not_in_mem[-1]
-            print("The question - 0")
-            print(the_question)
         else:
-            print("there are some with mem lvl but all in mem")
             the_question = Question.query.filter(Question.memory_lvl == None).first()
     else:
-        print("there are no q in mem lvl")
         the_question = Question.query.filter(Question.memory_lvl == None).first()
-    print("The question")
-    print(the_question)
     return render_template('quest.html', 
             the_question=the_question,
             )
