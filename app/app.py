@@ -299,9 +299,9 @@ def delete_all_memory_lvls():
 @app.route('/quest')
 def quest():
     questions_with_mem_lvl = Question.query.filter(Question.memory_lvl != None).all()
+    questions_in_mem = 0
     if questions_with_mem_lvl:
         answeredQuestions_not_in_mem = []
-        questions_in_mem = 0
         for q in questions_with_mem_lvl:
             if not q.in_memory():
                 answeredQuestions_not_in_mem.append(q)
