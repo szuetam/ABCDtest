@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+{% block body %}
+
+<h2> Manual </h2>
+Memory lvls meaning:<br>
+"-" - means that question was not answered yet at all<br>
+"0" - means that question was answered but last answer was bad<br>
+"1" - means that question was answered and last answer was correct, but it was only one or previous was bad<br>
+"2" - means that question was answered correct twice in row, (note that before it was answered incorrect or not at all)<br>
+"n" - means that question was answered correct n times in row, (note that before it was answered incorrect or not at all)<br>
+
+{% endblock %}
