@@ -107,6 +107,7 @@ class Question(db.Model):
         self.answered = 0
         self.answered_correct = 0
         self.answered_false = 0
+        Stat.query.first().questions = Question.query.count()
 
     def __repr__(self):
         return '<Question %r>' % self.question_text
@@ -178,7 +179,6 @@ class Answer(db.Model):
         # memory level that question was before answering if any
         memory_lvl_to_update.update()
 
-
     def __repr__(self):
         return '<Answer %r>' % self.question
 
@@ -192,6 +192,23 @@ class Category(db.Model):
 
     def __repr__(self):
         return '<Category %r>' % self.name
+
+
+class Stat(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    questions = db.Column(db.Integer)
+    # in memory lvl for 95-99%
+    questions_in_mem = db.Column(db.Integer)
+    # to verify
+    questions_to_ver = db.Column(db.Integer)
+
+    def __init__(self):
+        self.questions = Question.query.count()
+        self.questions_in_mem = 0
+        self.questions_to_ver = 0
+
+    def __repr__(self):
+        return '<Stat only>'
 
 
 class Memory_lvl(db.Model):
@@ -240,14 +257,6 @@ class Memory_lvl(db.Model):
         return '<Memory_lvl %r>' % self.num
 
 
-def Memory_lvl_init():
-    if not Memory_lvl.query.filter(Memory_lvl.num==0).first():
-        #tworzymy go
-        lvl = Memory_lvl(0)
-        db.session.add(lvl)
-        db.session.commit()
-
-
 @app.route('/update-memory-lvl', methods=['POST'])
 def update_memory_lvl():
     memory_lvl   =   Memory_lvl.query.get(request.form['memory_lvl_id'])
@@ -290,18 +299,27 @@ def delete_all_memory_lvls():
 @app.route('/quest')
 def quest():
     questions_with_mem_lvl = Question.query.filter(Question.memory_lvl != None).all()
+    questions_in_mem = 0
     if questions_with_mem_lvl:
         answeredQuestions_not_in_mem = []
         for q in questions_with_mem_lvl:
             if not q.in_memory():
                 answeredQuestions_not_in_mem.append(q)
+            else:
+                questions_in_mem += 1
         answeredQuestions_not_in_mem.sort(key=lambda x: x.memory_lvl.num, reverse=True)
+        questions_to_ver = len(answeredQuestions_not_in_mem)
         if answeredQuestions_not_in_mem:
             the_question=answeredQuestions_not_in_mem[-1]
         else:
             the_question = Question.query.filter(Question.memory_lvl == None).first()
     else:
         the_question = Question.query.filter(Question.memory_lvl == None).first()
+    # update stats
+    stat=Stat.query.first()
+    stat.questions_in_mem = questions_in_mem
+    stat.questions_to_ver = questions_to_ver
+    db.session.commit()
     return render_template('quest.html', 
             the_question=the_question,
             )
@@ -340,9 +358,6 @@ def show_question(question_id):
             )
 
 
-
-
-
 @app.route('/memory-lvls')
 def show_memory_lvls():
     memory_lvls=Memory_lvl.query.all()
@@ -350,6 +365,7 @@ def show_memory_lvls():
     return render_template('show_memory_lvls.html', 
             Memory_lvl=Memory_lvl,
             memory_lvls=memory_lvls,
+            stat=Stat.query.first(),
             )
 
 
@@ -397,6 +413,7 @@ def add_entry():
 def del_entry():
     question = Question.query.get(request.form['question_id'])
     db.session.delete(question)
+    Quest.query.first().questions = Question.query.count()
     db.session.commit()
     flash('Question was successfully deleted with its options')
     return redirect(url_for('show_entries'))
@@ -473,11 +490,17 @@ def del_all_answers():
 if __name__ == '__main__':
     app.run(port=5550)
     app.add_url_rule('/favicon.ico', redirect_to=url_for('static', filename='favicon.ico'))
+    db.create_all()
+    if not Stat.query.first():
+        db.session.add(Stat())
+        db.session.commit()
+        
 
 # TODO
-# fix memory levels
-# ETA 2h
 #
 # some stats
-# % of learned material (how many qestions are in staging KISS
+# % of learned material KISS:
+# questions x
+# in memory lvl for 95-99%
+# to verify
 # ETA 3h
