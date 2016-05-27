@@ -389,7 +389,7 @@ def show_memory_lvls():
 
 @app.route('/stats')
 def show_stats():
-    return render_template('show_memory_lvls.html',
+    return render_template('show_stats.html',
                            categories_count=Category.query.count(),
                            questions_count=Question.query.count(),
                            answers_count=Answer.query.count(),
@@ -525,7 +525,7 @@ if __name__ == '__main__':
 #
 # some stats
 # % of learned material KISS:
-# questions x
-# in memory lvl for 95-99%
-# to verify
 # ETA 3h
+#
+# eliminate need to answer wrong
+# ETA 2h
