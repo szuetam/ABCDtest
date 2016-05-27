@@ -523,9 +523,5 @@ if __name__ == '__main__':
 
 # TODO
 #
-# some stats
-# % of learned material KISS:
-# ETA 3h
-#
 # eliminate need to answer wrong
 # ETA 2h
