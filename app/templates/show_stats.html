@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+{% block body %}
+
+Stats<br>
+    <br>
+Categories: {{ categories_count }} <br>
+Questions: {{ questions_count }} <br>
+    <br>
+Answers: {{ answers_count }} <br>
+<br>
+Questions: {{ stat.questions }} <br>
+Questions in 95-99%mem: {{ stat.questions_in_mem }} <br>
+Questions to ver: {{stat.questions_to_ver }} <br>
+
+{% endblock %}
