@@ -307,6 +307,11 @@ def quest():
             )
 
 
+@app.route('/manual')
+def manual():
+    return render_template('manual.html')
+
+
 @app.route('/quest-check', methods=['POST'])
 def quest_check():
     option = Option.query.get(request.form['option_id'])
